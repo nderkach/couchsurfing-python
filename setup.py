@@ -5,7 +5,7 @@ from distutils.core import setup
 
 PROJECT = 'Couchsurfing API'
 VERSION = '0.1'
-URL = ''
+URL = 'https://github.com/nderkach/couchsurfing-python'
 AUTHOR = 'Nikolay Derkach'
 AUTHOR_EMAIL = 'nderk@me.com'
 DESC = "A short description..."
