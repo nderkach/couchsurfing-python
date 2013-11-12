@@ -21,23 +21,12 @@ setup(
     name=PROJECT,
     version=VERSION,
     description=DESC,
-    long_description=read_file('README.rst'),
+    # long_description=read_file('README.rst'),
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     url=URL,
     license=read_file('LICENSE'),
-    namespace_packages=[],
     packages=['couchsurfing'],
-    package_dir = {'': os.path.dirname(__file__)},
-    include_package_data=True,
-    zip_safe=False,
-    install_requires=[
-        # -*- Requirements -*-
-	"requests_futures" 
-    ],
-    entry_points = {
-        # -*- Entry points -*-
-    },
     classifiers=[
     	# see http://pypi.python.org/pypi?:action=list_classifiers
         # -*- Classifiers -*- 
