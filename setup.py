@@ -1,13 +1,7 @@
 #!/usr/bin/env python
 
-# Bootstrap installation of Distribute
-import distribute_setup
-distribute_setup.use_setuptools()
-
 import os
-
-from setuptools import setup
-
+from distutils.core import setup
 
 PROJECT = 'Couchsurfing API'
 VERSION = '0.1'
@@ -39,7 +33,7 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Requirements -*-
-	requests
+	"requests_futures" 
     ],
     entry_points = {
         # -*- Entry points -*-
