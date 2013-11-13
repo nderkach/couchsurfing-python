@@ -2,12 +2,11 @@
 
 import datetime
 import re
-import timeit
+import time
+import getpass
 
 from requests_futures.sessions import FuturesSession
 
-
-AUTH = {"username": "nderkach", "password": "Nnd121088!"}
 CS_URL = "https://api.couchsurfing.org"
 
 class AuthException(Exception):
@@ -15,15 +14,16 @@ class AuthException(Exception):
 
 class Api(object):
 	""" Base API class"""
-	def __init__(self, username=AUTH["username"], password=AUTH["password"]):
+	def __init__(self, username, password):
 		# self._session = requests.Session()
-		self._session = FuturesSession(max_workers=10)
+		self._session = FuturesSession(max_workers=50)
 		r = self._session.post('https://api.couchsurfing.org/sessions',
 		                      data={"username": username, "password": password}).result()
 		# print({"username": "{0}".format(username), "password": "{0}".format(password)})
 		if (r.status_code != 200):
 			raise AuthException
 		self._uid = r.json()["url"].split('/')[-1]
+		self.get = self._session.get
 		# print(self._uid)
 		# print(r.headers)
 
@@ -33,24 +33,28 @@ class Api(object):
 	def __str__(self):
 		print("CouchSurfing API: Logged in as {0.realname} ({0.username})".format(self.data))
 
-class Messages(Api):
+	@property
+	def uid(self):
+		return self._uid
+
+class Messages():
 	""" Private messages """
-	def __init__(self, mtype="inbox", limit=10):
-		super().__init__()
+	def __init__(self, api, mtype="inbox", limit=10):
+		self._api = api
 		assert(mtype in ("inbox", "sent"))
-		url = "https://api.couchsurfing.org/users/{0._uid}/messages".format(self)
-		r = self._session.get(url, params= {"type": mtype, "limit": limit}).result()
+		url = "https://api.couchsurfing.org/users/{0.uid}/messages".format(self._api)
+		r = self._api.get(url, params= {"type": mtype, "limit": limit}).result()
 		self.messages = r.json()['object']
 		self.version = r.json()['version']
 		self.after = r.json()['after']
 		# for message in self.messages:
-		# 	r = self._session.get(message)
+		# 	r = self._api.get(message)
 		# 	print(r.json())
 
 	def get_unread(self, with_couch_request=False):
 		for message in self.messages:
 			# TODO: send requests in parallel
-			r = self._session.get(message).result()
+			r = self._api.get(message).result()
 			user = r.json()["user"]["url"]
 			title = r.json()["title"]
 			date = r.json()["date"]
@@ -60,12 +64,14 @@ class Messages(Api):
 				print(r.json())
 				print(message)
 
-class Requests(Api):
+class Requests(object):
 	""" Couch requests """
-	def __init__(self, start = 0, end = float("inf")):
-		super().__init__()
-		url = "https://api.couchsurfing.org/users/{0._uid}/couchrequests".format(self)
-		r = self._session.get(url).result()
+	def __init__(self, api):
+		t = time.time()
+		self._api = api
+		print("Auth finished", time.time() - t)
+		url = "https://api.couchsurfing.org/users/{0.uid}/couchrequests".format(self._api)
+		r = self._api.get(url).result()
 		
 		# print(r.json())
 
@@ -86,11 +92,16 @@ class Requests(Api):
 
 		request_list = set()
 
+		print("Enque all couchrequests", time.time() - t)
+
 		for request in self._requests:
 			# print("request")
-			request_list.add(self._session.get(request))
+			request_list.add(self._api.get(request))
+
+		print("Dequeue all couchrequests", time.time() - t)
 
 		for request in request_list:
+			print("Request started", time.time() - t)
 			# print("processing")
 			r = request.result()
 			json = r.json()
@@ -103,6 +114,8 @@ class Requests(Api):
 			# if not start < arrival < departure < end:
 			# 	# print (arrival, departure)
 			# 	continue
+
+			print("Request processing started", time.time() - t)
 
 			if json['status'] == "new" and not json['is_expired']:
 				# print(json)
@@ -123,6 +136,9 @@ class Requests(Api):
 								  "class": "event-info", "start": str(int(arrival)*1000), "end": str(int(departure)*1000) })
 				id +=1
 				# print("append accepted")
+			print("Request finished", time.time() - t)
+
+		print("Finished dequeuing all couchrequests", time.time() - t)
 
 		# for n in self._new:
 		# 	for a in self._accepted:
@@ -159,13 +175,17 @@ class Requests(Api):
 
 
 if __name__ == "__main__":
-	ap = Api()
-	messages = Messages("inbox")
+	login = input("Login: ")
+	password = getpass.getpass()
 
-	now = datetime.datetime.now()
-	start_month = datetime.datetime(now.year, now.month, 1)
+	ap = Api(login, password)
+	messages = Messages(api, "inbox")
 
-	requests = Requests(start_month.timestamp(), now.timestamp())
+	# now = datetime.datetime.now()
+	# start_month = datetime.datetime(now.year, now.month, 1)
+
+	# requests = Requests(start_month.timestamp(), now.timestamp())
+	requests = Requests(api)
 	# print(requests.accepted)
 	# print(requests.new)
 	# print("Total: ", len(requests.accepted+requests.new))
