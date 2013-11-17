@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import datetime
-import re
 import time
+from calendar import timegm
+from datetime import datetime
+import re
 import getpass
 
 # from requests_futures.sessions import FuturesSession
@@ -24,10 +25,11 @@ class Api(object):
 			raise AuthException
 		self._uid = r.json()["url"].split('/')[-1]
 		self._username = username
+		self._password = username
 		self.get = self._session.get
 
 	def __repr__(self):
-		return "couchsurfing.Api()"
+		return "Api(username={0._username}, password={0._password})".format(self)
 
 	def __str__(self):
 		return "CouchSurfing API: Logged in as {0._username}".format(self)
@@ -59,101 +61,81 @@ class Messages():
 			date = r.json()["date"]
 			message = r.json()["message"]
 			if (not r.json()["user_is_sender"] and r.json()["is_unread"] and
-			    (with_couch_request or (not with_couch_request and "couchrequest" not in r.json()))):
+			    (with_couch_request or (not with_couch_request and
+			    					    "couchrequest" not in r.json()))):
 				print(r.json())
 				print(message)
 
 class Requests(object):
-	""" Couch requests """
+	""" Couch requests within (start, end)
+	"""
 	def __init__(self, api, start=0, end=None):
 		t = time.time()
 		self._api = api
+		# print(start, end)
 		# print("Initializing requests...", time.time() - t)
-		url = "https://api.couchsurfing.org/users/{0.uid}/couchrequests".format(self._api)
-		payload = {"since": start, "expand": "couchrequests,users"}
+		url = "https://api.couchsurfing.org/users/{0.uid}/couchrequests".format(
+			self._api)
+		"""
+			"since" refers to request creation date
+			we check for all the requests create in the last 2 months
+
+		"""
+		payload = {"since": start-60*24*3600, "expand": "couchrequests,users"}
+
+#start-864000
 
 		r = self._api.get(url, params=payload)
 
 		# print(r.json())
 
-
 		self._new = []
 		self._accepted = []
+		_id = 0
 
 		if 'object' not in r.json():
-			return
+			raise Exception("No object in response")
 
 		self._requests = r.json()['object']
-			
-		id = 0
 
 		def get_timestamp(timestr):
-			return datetime.datetime.strptime(timestr, "%Y-%m-%dT%H:%M:%SZ").timestamp()
-
-		# print(len(self._requests))
+			return timegm(time.strptime(timestr.replace('Z', 'GMT'),
+											  "%Y-%m-%dT%H:%M:%S%Z"))
 
 		for request in self._requests:
-			# print("Request started", time.time() - t)
-
-			# print(request)
-
 			arrival = get_timestamp(request['arrival'])
 			departure = get_timestamp(request['departure'])
 
-			if end and departure > end:
+			if departure < start or (end and arrival > end):
 				continue
 
 			if request['status'] != "declined":
-				url = "https://couchsurfing.org/couchmanager?read={0}".format(request['url'].split('/')[-1])
-				name = "{0} from {1}".format(request["surfer_user"]["realname"], request["surfer_user"]["address"]["country"])
-				# find = re.findall(r'(.*) sent', str(request['subject']))
-				# name = find if find else request['subject']
-				# name = request["realname"]
+				url = "https://couchsurfing.org/couchmanager?read={0}".format(
+					request['url'].split('/')[-1])
+				name = "{0} from {1}".format(request["surfer_user"]["realname"],
+			    	request["surfer_user"]["address"]["country"])
 
 				if request['status'] in ("maybe", "new"):
-					self._new.append({"id": str(id), "title": name, "url": url,
-									  "class": "event-warning", "start": str(int(arrival)*1000), "end": str(int(departure)*1000) })
-					id +=1
+					self._new.append({"id": _id, "title": name,
+									  "url": url, "class": "event-warning",
+									  "start": arrival,
+									  "end": departure })
+					_id +=1
 
 				elif request['status'] == "accepted":
-					self._accepted.append({"id": str(id), "title": name, "url": url,
-									  "class": "event-success", "start": str(int(arrival)*1000), "end": str(int(departure)*1000) })
-					id +=1
-
-		# print("Finished dequeuing all couchrequests", time.time() - t)
-
-		# for n in self._new:
-		# 	for a in self._accepted:
-		# 		if (a[0] <= n[0] <= a[1]) or (n[0] <= a[0] <= n[1]):
-		# 			print(n, a)
+					self._accepted.append({"id": _id, "title": name,
+										   "url": url, "class": "event-success",
+										   "start": arrival,
+										   "end": departure })
+					_id +=1
 
 	@property
 	def accepted(self):
-		# accepted = set()
-		# for daterange in self._accepted:
-		# 	for datetm in (daterange[0] + datetime.timedelta(n) for n in range((daterange[1]-daterange[0]).days + 1)):
-		# 		accepted.add(datetm.date())
 		return self._accepted
 
 	@property
 	def new(self):
-		# new = set()
-		# for daterange in self._new:
-		# 	for datetm in (daterange[0] + datetime.timedelta(n) for n in range((daterange[1]-daterange[0]).days + 1)):
-		# 		new.add(datetm.date())
 		return self._new
-
-	# @accepted.setter
-	# def accepted(self, value):
-	# 	self.accepted = value
-
-	# @new.setter
-	# def new(self, value):
-	# 	self.new = value
-
-
-
-
 
 
 if __name__ == "__main__":
@@ -163,13 +145,15 @@ if __name__ == "__main__":
 	api = Api(login, password)
 	print(api.uid)
 	print(api)
-	messages = Messages(api, "inbox")
+	# messages = Messages(api, "inbox")
 
-	# now = datetime.datetime.now()
-	# start_month = datetime.datetime(now.year, now.month, 1)
+	now = datetime.now()
+	start_month = int(datetime(now.year, now.month, 1).timestamp())
+	end_month = int(datetime(now.year, now.month+1, 1).timestamp())
 
-	# requests = Requests(start_month.timestamp(), now.timestamp())
-	requests = Requests(api)
-	# print(requests.accepted)
-	# print(requests.new)
+	# requests = Requests(api, start_month, end_month)
+	requests = Requests(api, 1381701600, 1382306400)
+	# requests = Requests(api)
+	print(requests.accepted)
+	print(requests.new)
 	print("Total: ", len(requests.accepted+requests.new))
