@@ -16,27 +16,38 @@ class AuthException(Exception):
 
 class Api(object):
 	""" Base API class"""
-	def __init__(self, username, password):
+	def __init__(self, username=None, password=None, uid = None, cookies = None):
 		self._session = requests.Session()
-		# self._session = FuturesSession()
-		r = self._session.post('https://api.couchsurfing.org/sessions',
+		if cookies:
+			# check if we already have a cookie ti authenticate our session with
+			assert(uid and isinstance(cookies, requests.cookies.RequestsCookieJar))
+			self._session.cookies = cookies
+			self._uid = uid
+			# TODO: there could be a way to get uid from the API
+			# otherwise we'll have to store the mapping uid -> session cookie elsewhere
+		else:
+			# otherwise run a post to get one
+			assert(username and password)
+			r = self._session.post('https://api.couchsurfing.org/sessions',
 		                      data={"username": username, "password": password})
-		if (r.status_code != 200):
-			raise AuthException
-		self._uid = r.json()["url"].split('/')[-1]
-		self._username = username
-		self._password = username
+			if (r.status_code != 200):
+				raise AuthException
+			self._uid = r.json()["url"].split('/')[-1]
 		self.get = self._session.get
 
-	def __repr__(self):
-		return "Api(username={0._username}, password={0._password})".format(self)
+	# def __repr__(self):
+	# 	return "Api(username={0._username}, password={0._password})".format(self)
 
-	def __str__(self):
-		return "CouchSurfing API: Logged in as {0._username}".format(self)
+	# def __str__(self):
+	# 	return "CouchSurfing API: Logged in as {0._username}".format(self)
 
 	@property
 	def uid(self):
 		return self._uid
+
+	@property
+	def cookies(self):
+		return self._session.cookies
 
 class Messages():
 	""" Private messages """
@@ -69,13 +80,14 @@ class Messages():
 class Requests(object):
 	""" Couch requests within (start, end)
 	"""
-	def __init__(self, api, start=0, end=None):
+	def __init__(self, api, start=60*24*3600, end=None):
 		t = time.time()
 		self._api = api
 		# print(start, end)
 		# print("Initializing requests...", time.time() - t)
 		url = "https://api.couchsurfing.org/users/{0.uid}/couchrequests".format(
 			self._api)
+
 		"""
 			"since" refers to request creation date
 			we check for all the requests create in the last 2 months
@@ -83,11 +95,7 @@ class Requests(object):
 		"""
 		payload = {"since": start-60*24*3600, "expand": "couchrequests,users"}
 
-#start-864000
-
 		r = self._api.get(url, params=payload)
-
-		# print(r.json())
 
 		self._new = []
 		self._accepted = []
@@ -143,8 +151,12 @@ if __name__ == "__main__":
 	password = getpass.getpass()
 
 	api = Api(login, password)
-	print(api.uid)
+	print(api._uid)
 	print(api)
+
+	api2 = Api(uid=api.uid, cookies=api._session.cookies)
+	print(api2._uid)
+
 	# messages = Messages(api, "inbox")
 
 	now = datetime.now()
@@ -152,7 +164,7 @@ if __name__ == "__main__":
 	end_month = int(datetime(now.year, now.month+1, 1).timestamp())
 
 	# requests = Requests(api, start_month, end_month)
-	requests = Requests(api, 1381701600, 1382306400)
+	requests = Requests(api2, 1381701600, 1382306400)
 	# requests = Requests(api)
 	print(requests.accepted)
 	print(requests.new)
