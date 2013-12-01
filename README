@@ -3,7 +3,14 @@ couchsurfing-python
 
 Couchsurfing.org Python API
 
+
+Installation:
+-------------
+
+`pip install couchsurfing`
+
 Usage:
+------
 
 * Initialize API with couchsurfing.org username and password:
 
