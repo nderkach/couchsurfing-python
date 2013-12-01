@@ -7,11 +7,14 @@ Usage:
 
 * Initialize API with couchsurfing.org username and password:
 
+```python
 	from couchsurfing import Api
 	api = Api(login, password)
+```
 
 * Retrieve all your couchrequests between certain dates (in unixtime), e.g. for the current month:
 
+```python
 	from couchsurfing import Requests
 	import datetime
 
@@ -20,17 +23,22 @@ Usage:
 	end_month = int(datetime(now.year, now.month+1, 1).timestamp())
 
 	requests = Requests(api, start_month, end_month)
+```
 
 * Get all accepted and pending couchrequests:
 
+```python
 	print(requests.accepted)
 	print(requests.new)
+```
 
 * Get send/received messages:
 
+```python
 	from couchsurfing import Messages
 	messages = Messages(api, "inbox")
 	messages.get_unread()
+```
 
 
 
