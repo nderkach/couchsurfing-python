@@ -6,7 +6,6 @@ from datetime import datetime
 import re
 import getpass
 
-# from requests_futures.sessions import FuturesSession
 import requests
 
 CS_URL = "https://api.couchsurfing.org"
@@ -19,7 +18,7 @@ class Api(object):
 	def __init__(self, username=None, password=None, uid = None, cookies = None):
 		self._session = requests.Session()
 		if cookies:
-			# check if we already have a cookie ti authenticate our session with
+			# check if we already have a cookie to authenticate our session with
 			assert(uid and isinstance(cookies, requests.cookies.RequestsCookieJar))
 			self._session.cookies = cookies
 			self._uid = uid
@@ -34,12 +33,6 @@ class Api(object):
 				raise AuthException
 			self._uid = r.json()["url"].split('/')[-1]
 		self.get = self._session.get
-
-	# def __repr__(self):
-	# 	return "Api(username={0._username}, password={0._password})".format(self)
-
-	# def __str__(self):
-	# 	return "CouchSurfing API: Logged in as {0._username}".format(self)
 
 	@property
 	def uid(self):
@@ -59,9 +52,6 @@ class Messages():
 		self.messages = r.json()['object']
 		self.version = r.json()['version']
 		self.after = r.json()['after']
-		# for message in self.messages:
-		# 	r = self._api.get(message)
-		# 	print(r.json())
 
 	def get_unread(self, with_couch_request=False):
 		for message in self.messages:
@@ -74,7 +64,6 @@ class Messages():
 			if (not r.json()["user_is_sender"] and r.json()["is_unread"] and
 			    (with_couch_request or (not with_couch_request and
 			    					    "couchrequest" not in r.json()))):
-				print(r.json())
 				print(message)
 
 class Requests(object):
@@ -83,21 +72,17 @@ class Requests(object):
 	def __init__(self, api, start=60*24*3600, end=None):
 		t = time.time()
 		self._api = api
-		# print(start, end)
-		# print("Initializing requests...", time.time() - t)
 		url = "https://api.couchsurfing.org/users/{0.uid}/couchrequests".format(
 			self._api)
 
 		"""
 			"since" refers to request creation date
-			we check for all the requests create in the last 2 months
+			we check for all the requests created in the last 2 months
 
 		"""
 		payload = {"since": start-60*24*3600, "expand": "couchrequests,users"}
 
 		r = self._api.get(url, params=payload)
-
-		print(r.json())
 
 		self._new = []
 		self._accepted = []
@@ -152,22 +137,22 @@ if __name__ == "__main__":
 	login = input("Login: ")
 	password = getpass.getpass()
 
+	# test API with login and password
 	api = Api(login, password)
-	print(api._uid)
-	print(api)
+	print(api.uid)
 
-	api2 = Api(uid=api.uid, cookies=api._session.cookies)
-	print(api2._uid)
+	# login with a session cookie received on a previous authentication
+	api2 = Api(uid=api.uid, cookies=api.cookies)
+	print(api2.uid)
 
-	# messages = Messages(api, "inbox")
+	messages = Messages(api, "inbox")
+	messages.get_unread()
 
 	now = datetime.now()
 	start_month = int(datetime(now.year, now.month, 1).timestamp())
-	end_month = int(datetime(now.year, now.month+1, 1).timestamp())
+	end_month = int(datetime(now.year, now.month%12+1, 1).timestamp())
 
-	# requests = Requests(api, start_month, end_month)
-	requests = Requests(api2, 1381701600, 1382306400)
-	# requests = Requests(api)
+	requests = Requests(api, start_month, end_month)
 	print(requests.accepted)
 	print(requests.new)
 	print("Total: ", len(requests.accepted+requests.new))

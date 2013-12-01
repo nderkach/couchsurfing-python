@@ -3,12 +3,12 @@
 import os
 from distutils.core import setup
 
-PROJECT = 'Couchsurfing API'
+PROJECT = 'couchsurfing'
 VERSION = '0.1'
 URL = 'https://github.com/nderkach/couchsurfing-python'
 AUTHOR = 'Nikolay Derkach'
 AUTHOR_EMAIL = 'nderk@me.com'
-DESC = "A short description..."
+DESC = "A wrapper for couchsurfing.org API"
 
 def read_file(file_name):
     file_path = os.path.join(
@@ -21,15 +21,23 @@ setup(
     name=PROJECT,
     version=VERSION,
     description=DESC,
-    # long_description=read_file('README.rst'),
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     url=URL,
     license=read_file('LICENSE'),
     packages=['couchsurfing'],
     classifiers=[
-    	# see http://pypi.python.org/pypi?:action=list_classifiers
-        # -*- Classifiers -*- 
         "Programming Language :: Python",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: End Users/Desktop",
+        "Operating System :: OS Independent",
+        "License :: Public Domain",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Topic :: Internet :: WWW/HTTP",
+        "Environment :: Console"
     ],
 )
