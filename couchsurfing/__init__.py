@@ -10,7 +10,10 @@ import requests
 
 CS_URL = "https://api.couchsurfing.org"
 
-class AuthException(Exception):
+class AuthError(Exception):
+	pass
+
+class RequestError(Exception):
 	pass
 
 class Api(object):
@@ -30,9 +33,15 @@ class Api(object):
 			r = self._session.post('https://api.couchsurfing.org/sessions',
 		                      data={"username": username, "password": password})
 			if (r.status_code != 200):
-				raise AuthException
+				raise AuthError
 			self._uid = r.json()["url"].split('/')[-1]
-		self.get = self._session.get
+
+	def get(*args, **kwargs):
+		r = self._session.get(*args, **kwargs)
+		if (r.status_code == 200):
+			return r
+		else:
+			raise RequestError
 
 	@property
 	def uid(self):

@@ -4,7 +4,7 @@ import os
 from distutils.core import setup
 
 PROJECT = 'couchsurfing'
-VERSION = '0.1'
+VERSION = '0.1.1'
 URL = 'https://github.com/nderkach/couchsurfing-python'
 AUTHOR = 'Nikolay Derkach'
 AUTHOR_EMAIL = 'nderk@me.com'
