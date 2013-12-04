@@ -12,12 +12,12 @@ Installation:
 Usage:
 ------
 
-* Initialize API with couchsurfing.org username and password:
+Initialize API with couchsurfing.org username and password:
 
 	from couchsurfing import Api
 	api = Api(login, password)
 
-* Retrieve all your couchrequests between certain dates (in unixtime), e.g. for the current month:
+Retrieve all your couchrequests between certain dates (in unixtime), e.g. for the current month:
 
 	from couchsurfing import Requests
 	import datetime
@@ -28,16 +28,18 @@ Usage:
 
 	requests = Requests(api, start_month, end_month)
 
-* Get all accepted and pending couchrequests:
+Get all accepted and pending couchrequests:
 
 	print(requests.accepted)
 	print(requests.new)
 
-* Get send/received messages:
+Get send/received messages:
 
 	from couchsurfing import Messages
 	messages = Messages(api, "inbox")
 	messages.get_unread()
 
+.. image:: https://travis-ci.org/nderkach/couchsurfing-python.png
+   :target: https://travis-ci.org/nderkach/couchsurfing-python
 
 
