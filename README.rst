@@ -24,7 +24,7 @@ Usage:
 
 	now = datetime.now()
 	start_month = int((datetime(now.year, now.month, 1) - datetime(1970, 1, 1)).total_seconds())
-	start_month = int((datetime(now.year + (now.month/12), now.month%12+1, 1) - datetime(1970, 1, 1)).total_seconds())
+	end_month = int((datetime(now.year + (now.month/12), now.month%12+1, 1) - datetime(1970, 1, 1)).total_seconds())
 
 	couchrequests = CouchRequests(api, start_month, end_month)
 
