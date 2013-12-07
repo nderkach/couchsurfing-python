@@ -20,7 +20,7 @@ Usage:
 * Retrieve all your couchrequests between certain dates (in unixtime), e.g. for the current month::
 
 	from couchsurfing import CouchRequests
-	import datetime
+	from datetime import datetime
 
 	now = datetime.now()
 	start_month = int(datetime(now.year, now.month, 1).timestamp())
