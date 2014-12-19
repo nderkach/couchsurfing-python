@@ -3,12 +3,6 @@ couchsurfing-python
 
 Couchsurfing.org Python API
 
-
-Installation:
--------------
-
-`pip install couchsurfing`
-
 Usage:
 ------
 
@@ -17,27 +11,10 @@ Usage:
 	from couchsurfing import Api
 	api = Api(login, password)
 
-* Retrieve all your couchrequests between certain dates (in unixtime), e.g. for the current month::
+* Get you user profile::
 
-	from couchsurfing import CouchRequests
-	from datetime import datetime
+	api.get_profile()
 
-	now = datetime.now()
-	start_month = int((datetime(now.year, now.month, 1) - datetime(1970, 1, 1)).total_seconds())
-	end_month = int((datetime(now.year + (now.month/12), now.month%12+1, 1) - datetime(1970, 1, 1)).total_seconds())
-
-	couchrequests = CouchRequests(api, start_month, end_month)
-
-* Get all accepted and pending couchrequests::
-
-	print(requests.accepted)
-	print(requests.new)
-
-* Get send/received messages::
-
-	from couchsurfing import Messages
-	messages = Messages(api, "inbox")
-	messages.get_unread()
 
 .. image:: https://travis-ci.org/nderkach/couchsurfing-python.png
    :target: https://travis-ci.org/nderkach/couchsurfing-python
