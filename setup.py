@@ -4,11 +4,11 @@ import os
 from distutils.core import setup
 
 PROJECT = 'couchsurfing'
-VERSION = '0.2.0'
+VERSION = '1.0.0'
 URL = 'https://github.com/nderkach/couchsurfing-python'
 AUTHOR = 'Nikolay Derkach'
 AUTHOR_EMAIL = 'nderk@me.com'
-DESC = "A wrapper for couchsurfing.org API"
+DESC = "A wrapper for couchsurfing.com API"
 
 def read_file(file_name):
     file_path = os.path.join(
