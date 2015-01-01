@@ -14,13 +14,6 @@ class AuthError(Exception):
     pass
 
 
-class RequestError(Exception):
-    """
-    Incorrect response when querying API
-    """
-    pass
-
-
 class Api(object):
     """ Base API class
     >>> api = Api("nzoakhvi@sharklasers.com", "qwerty")
@@ -72,8 +65,9 @@ class Api(object):
                 CS_URL+"/api/v2/sessions", data=json.dumps(login_payload)
             )
 
-            if (r.status_code != 200 or "sessionUser" not in r.json()):
+            if "sessionUser" not in r.json():
                 raise AuthError
+            r.raise_for_status()
             self.uid = int(r.json()["sessionUser"]["id"])
             self._access_token = r.json()["sessionUser"]["accessToken"]
 
@@ -92,9 +86,7 @@ class Api(object):
         })
 
         r = self._session.get(CS_URL + path)
-
-        if (r.status_code != 200):
-                raise RequestError
+        r.raise_for_status()
 
         return r.json()
 

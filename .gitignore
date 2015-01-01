@@ -39,5 +39,4 @@ nosetests.xml
 # Virtualenv
 venv
 venv2.7
-
-.pypirrc
+.pypirc

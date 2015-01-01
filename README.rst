@@ -3,6 +3,14 @@ couchsurfing-python
 
 Couchsurfing.org Python API
 
+.. image:: https://badge.fury.io/py/couchsurfing.svg
+    :target: http://badge.fury.io/py/couchsurfing
+
+Requirements
+------------
+
+* requests
+
 Usage:
 ------
 
@@ -14,9 +22,6 @@ Usage:
 * Get you user profile::
 
 	api.get_profile()
-
-
+	
 .. image:: https://travis-ci.org/nderkach/couchsurfing-python.png
-   :target: https://travis-ci.org/nderkach/couchsurfing-python
-
-
+    :target: https://travis-ci.org/nderkach/couchsurfing-python
