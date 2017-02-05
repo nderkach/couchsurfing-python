@@ -10,12 +10,14 @@ AUTHOR = 'Nikolay Derkach'
 AUTHOR_EMAIL = 'nderk@me.com'
 DESC = "A wrapper for couchsurfing.com API"
 
+
 def read_file(file_name):
     file_path = os.path.join(
         os.path.dirname(__file__),
         file_name
         )
     return open(file_path).read()
+
 
 setup(
     name=PROJECT,
@@ -30,7 +32,7 @@ setup(
     classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: OS Independent",
