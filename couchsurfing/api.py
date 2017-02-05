@@ -11,6 +11,14 @@ class AuthError(Exception):
     """
     Authentication error
     """
+    def __init__(self, arg):
+        print('AuthError: ' + str(arg))
+
+
+class RequestError(Exception):
+    """
+    Request error
+    """
     pass
 
 
@@ -21,6 +29,12 @@ class Api(object):
     1003669205
     >>> api.get_profile() # doctest: +ELLIPSIS
     {...}
+    >>> api.get_profile_by_id('1003669205') # doctest: +ELLIPSIS
+    {...}
+    >>> api.get_friendlist('1003669205') # doctest: +ELLIPSIS
+    {...}
+    >>> api.get_references('1003669205', 'surf') # doctest: +ELLIPSIS
+    {...}
     >>> api = Api("foo", "bar") # doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
@@ -28,8 +42,8 @@ class Api(object):
     """
 
     def get_url_signature(self, key, msg):
-        return hmac.new(key.encode("utf-8"), msg.encode("utf-8"),
-                        sha1).hexdigest()
+        return hmac.new(
+            key.encode("utf-8"), msg.encode("utf-8"), sha1).hexdigest()
 
     def __init__(self, username=None, password=None,
                  uid=None, access_token=None):
@@ -47,7 +61,7 @@ class Api(object):
 
             signature = self.get_url_signature(
                 PRIVATE_KEY,
-                "/api/v2/sessions"+json.dumps(login_payload)
+                "/api/v3/sessions" + json.dumps(login_payload)
             )
 
             self._session.headers = {
@@ -62,33 +76,76 @@ class Api(object):
             }
 
             r = self._session.post(
-                CS_URL+"/api/v2/sessions", data=json.dumps(login_payload)
+                CS_URL+"/api/v3/sessions", data=json.dumps(login_payload)
             )
 
             if "sessionUser" not in r.json():
-                raise AuthError
+                raise AuthError(r.json())
             r.raise_for_status()
             self.uid = int(r.json()["sessionUser"]["id"])
             self._access_token = r.json()["sessionUser"]["accessToken"]
 
-    def get_profile(self):
+    def api_request(self, path):
+        """
+        Request api for certain path
+        """
         assert(self._access_token)
-
-        path = "/api/v2/users/" + str(self.uid)
 
         signature = self.get_url_signature(
             "{0}.{1}".format(PRIVATE_KEY, self.uid), path
         )
-
         self._session.headers.update({
             "X-CS-Url-Signature": signature,
             "X-Access-Token": self._access_token
         })
-
         r = self._session.get(CS_URL + path)
-        r.raise_for_status()
+
+        if (r.status_code != 200):
+            raise RequestError
 
         return r.json()
+
+    def get_friendlist(self, uid, perPage=999999999):
+        """
+        Ask for friendlist for specific user
+        """
+        path = (
+            "/api/v3.1/users/" + str(uid) +
+            "/friendList/friends?perPage=" + str(perPage) +
+            "&page=1&includeMeta=false"
+        )
+
+        return self.api_request(path)
+
+    def get_profile(self):
+        """
+        Ask for your own profile
+        """
+        path = "/api/v3/users/" + str(self.uid)
+
+        return self.api_request(path)
+
+    def get_profile_by_id(self, uid):
+        """
+        Ask for specific user's profile
+        """
+        path = "/api/v3/users/" + str(uid)
+
+        return self.api_request(path)
+
+    def get_references(self, uid, type, perPage=999999999):
+        """
+        Ask for references
+
+        type -- surf, host, other_and_friend
+        """
+        path = (
+            "/api/v3/users/" + str(uid) +
+            "/references?perPage=" + str(perPage) +
+            "&relationshipType=" + type + "&includeReferenceMeta=true"
+        )
+
+        return self.api_request(path)
 
 
 if __name__ == "__main__":
