@@ -37,6 +37,21 @@ Usage:
 * Get the references of someone else::
 
         api.get_references(userID, type)
+
+* Get events in some place::
+
+        api.get_events("48.1078396751677,11.5792098447259")
+        # you can get lat/lng from google geocoding api
 	
+* Get hosts in some place::
+
+        api.get_hosts((place_name="Madrid, Spain",
+                       filters={'sleepingArrangements':'privateRoom'})
+
+* Get visitors in some place::
+
+        api.get_visits((place_name="Madrid, Spain",
+                       filters={'isVerified': 1})
+
 .. image:: https://travis-ci.org/nderkach/couchsurfing-python.png
     :target: https://travis-ci.org/nderkach/couchsurfing-python
