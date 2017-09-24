@@ -40,3 +40,6 @@ nosetests.xml
 venv
 venv2.7
 .pypirc
+
+# misc
+.DS_Store

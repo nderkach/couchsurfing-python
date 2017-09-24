@@ -2,6 +2,7 @@ couchsurfing-python
 ===================
 
 *UPDATE*: this package is not actively mainated anymore
+
 I also wrote a guide (https://www.toptal.com/back-end/reverse-engineering-the-private-api-hacking-your-couch) about the techniques I used to reverse engineer this and other APIs.
 
 Couchsurfing.org Python API

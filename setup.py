@@ -4,7 +4,7 @@ import os
 from distutils.core import setup
 
 PROJECT = 'couchsurfing'
-VERSION = '1.0.0'
+VERSION = '2.0.1'
 URL = 'https://github.com/nderkach/couchsurfing-python'
 AUTHOR = 'Nikolay Derkach'
 AUTHOR_EMAIL = 'nderk@me.com'
@@ -29,10 +29,11 @@ setup(
     license=read_file('LICENSE'),
     packages=['couchsurfing'],
     test_suite="tests",
+    data_files = [('', ['LICENSE'])],
     classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Development Status :: 5 - Beta",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: OS Independent",
